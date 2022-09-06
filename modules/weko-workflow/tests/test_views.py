@@ -535,6 +535,7 @@ def test_unlock_activity_nologin(client):
 
     res = client.post(url, json=input)
     assert res.status_code == 302
+    assert res.location == url_for('security.login',next="/workflow/activity/unlock/1",_external=True)
     # TODO check that the path changed
     # assert res.url == url_for('security.login')
 

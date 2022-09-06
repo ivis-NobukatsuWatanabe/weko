@@ -20,6 +20,7 @@
 
 """Blueprint for weko-workflow."""
 
+from email.headerregistry import ContentTypeHeader
 import json
 import os
 import re
@@ -1761,10 +1762,27 @@ def save_feedback_maillist(activity_id='0', action_id='0'):
                  methods=['GET'])
 @login_required
 def get_feedback_maillist(activity_id='0'):
-    """Get feedback_mail's list base on Activity Identifier.
+    """アクティビティに設定されているフィードバックメール送信先の情報を取得して返す
 
-    :param activity_id: Acitivity Identifier.
-    :return: Return code and mail list in json format.
+    Args:
+       activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
+    
+    Returns:
+        dict: json data
+
+    ---
+    get:
+        description: "get feedback maillist"
+        security:
+            - login_required: []
+        response:
+            200:
+                description: "success"
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: jsonify(code=1,msg=_('Success'),data=mail_list)
     """
     try:
         work_activity = WorkActivity()
@@ -1847,11 +1865,47 @@ def lock_activity(activity_id=0):
 @blueprint.route('/activity/unlock/<string:activity_id>', methods=['POST'])
 @login_required
 def unlock_activity(activity_id=0):
-    """Unlock activity."""
+    """キャッシュデータを削除することによりロックを解除する。
+
+    Args:
+        activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
+
+    Returns:
+        dict: json data
+
+    ---
+    post:
+        description: "unlock activity"
+        security:
+            - login_required: []
+        request_Body:
+            required: true
+            content:
+                text/xml:
+                    schema:
+                        string
+                    example: <locked_value>1-1661748792565</locked_value>
+        parameters:
+            - in: path
+              name: activity_id
+              description: 対象のアクティビティID
+              schema:
+                type: string
+        response:
+            200:
+                description: "success"
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: jsonify(code=200, msg="Unlock success")
+    """
     cache_key = 'workflow_locked_activity_{}'.format(activity_id)
     data = json.loads(request.data.decode("utf-8"))
     locked_value = str(data.get('locked_value'))
     msg = None
+    print(request.data)
+    print(request.headers.get("Content-Type"))
     # get lock activity from cache
     cur_locked_val = str(get_cache_data(cache_key)) or str()
     if cur_locked_val and cur_locked_val == locked_value:
@@ -1863,7 +1917,28 @@ def unlock_activity(activity_id=0):
 @blueprint.route('/check_approval/<string:activity_id>', methods=['GET'])
 @login_required
 def check_approval(activity_id='0'):
-    """Check approval."""
+    """アクティビティに対して承認の確認が必要であるかの判定をして、その結果を返す
+    
+    Args:
+        activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
+
+    Returns:
+        dict: json data
+
+    ---
+    get:
+        description: "check approval"
+        security:
+            - login_required: []
+    response:
+        200:
+            description: "success"
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: jsonify({'check_handle': -1, 'check_continue': -1, 'error': 1 })
+    """
     response = {
         'check_handle': -1,
         'check_continue': -1,
@@ -1900,9 +1975,31 @@ def send_mail(activity_id='0', mail_template=''):
 @blueprint.route('/save_activity_data', methods=['POST'])
 @login_required_customize
 def save_activity():
-    """Save activity.
+    """アイテムデータの新規登録、編集の完了後にアイテムデータの更新をする
 
-    @return:
+    Returns:
+        dict: json data
+
+    ---
+    post:
+        description: "save activity"
+        security:
+            - login_required_customize: []
+        request_Body:
+            required: true
+            content:
+                application/json:
+                    schema:
+                        object   
+                    example: {"activity_id": "A-20220830-00001", "title": "title", "shared_user_id": -1} 
+        response:
+            200:
+                description: "success"
+                content:
+                    application/json:
+                        schema:
+                            object
+                        example: jsonify({"success": True, "msg": ""})
     """
     response = {
         "success": True,
