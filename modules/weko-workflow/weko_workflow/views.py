@@ -1784,6 +1784,11 @@ def get_feedback_maillist(activity_id='0'):
                             object
                         example: jsonify(code=1,msg=_('Success'),data=mail_list)
     """
+    #try:
+    #    type_null_check(activity_id, str)
+    #except ValueError:
+    #    res = ResponseMessageSchema().load({"code":-1, "msg":""})
+    #    return jsonify(res.data), 500
     try:
         work_activity = WorkActivity()
         action_feedbackmail = work_activity.get_action_feedbackmail(
@@ -1903,6 +1908,11 @@ def unlock_activity(activity_id=0):
                             object
                         example: jsonify(code=200, msg="Unlock success")
     """
+    #try:
+    #    type_null_check(activity_id, str)
+    #except ValueError:
+    #    res = ResponseMessageSchema().load({"code":-1, "msg":""})
+    #    return jsonify(res.data), 500
     cache_key = 'workflow_locked_activity_{}'.format(activity_id)
     #try:
     #    data = LockedValueSchema().load(json.loads(request.data.decode("utf-8")))
@@ -1947,6 +1957,11 @@ def check_approval(activity_id='0'):
                             object
                         example: jsonify({'check_handle': -1, 'check_continue': -1, 'error': 1 })
     """
+    #try:
+    #    type_null_check(activity_id, str)
+    #except ValueError:
+    #    res = ResponseMessageSchema().load({"code":-1, "msg":""})
+    #    return jsonify(res.data), 500
     response = {
         'check_handle': -1,
         'check_continue': -1,
