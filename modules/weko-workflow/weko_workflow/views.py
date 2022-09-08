@@ -33,7 +33,7 @@ from functools import wraps
 
 import redis
 from redis import sentinel
-from weko_workflow.schema.marshmallow import ActivitySchema,ResponseMessageSchema
+from weko_workflow.schema.marshmallow import ActivitySchema,LockedValueSchema,ResponseMessageSchema, ResponseSchema, SaveSchema
 from marshmallow.exceptions import ValidationError
 
 from flask import Blueprint, abort, current_app, has_request_context, \
@@ -1792,6 +1792,8 @@ def get_feedback_maillist(activity_id='0'):
                 "WEKO_WORKFLOW_ITEM_REGISTRATION_ACTION_ID", 3))
         if action_feedbackmail:
             mail_list = action_feedbackmail.feedback_maillist
+            #if not isinstance(mail_list, list):
+            #    raise TypeError('mail_list is not list')
             for mail in mail_list:
                 if mail.get('author_id'):
                     email = Authors.get_first_email_by_id(
@@ -1800,14 +1802,15 @@ def get_feedback_maillist(activity_id='0'):
                         mail['email'] = email
                     else:
                         mail_list.remove(mail)
-            return jsonify(code=1,
-                           msg=_('Success'),
-                           data=mail_list)
+            #res = ResponseMessageSchema().load({'code':1,'msg':_('Success'),'data':mail_list})
+            return jsonify(res.data), 200
         else:
-            return jsonify(code=0, msg=_('Empty!'))
+            #res = ResponseMessageSchema().load({'code':0,'msg':''})
+            return jsonify(res.data), 200
     except Exception:
         current_app.logger.error("Unexpected error: {}".format(sys.exc_info()))
-    return jsonify(code=-1, msg=_('Error'))
+    #res = ResponseMessageSchema().load({'code':-1,'msg':_('Error')})
+    return jsonify(res.data)
 
 
 @blueprint.route('/activity/lock/<string:activity_id>', methods=['POST'])
@@ -1881,10 +1884,10 @@ def unlock_activity(activity_id=0):
         request_Body:
             required: true
             content:
-                text/xml:
+                text/plain:
                     schema:
                         string
-                    example: <locked_value>1-1661748792565</locked_value>
+                    example: {"locked_value":"1-1661748792565"}
         parameters:
             - in: path
               name: activity_id
@@ -1901,17 +1904,22 @@ def unlock_activity(activity_id=0):
                         example: jsonify(code=200, msg="Unlock success")
     """
     cache_key = 'workflow_locked_activity_{}'.format(activity_id)
-    data = json.loads(request.data.decode("utf-8"))
+    #try:
+    #    data = LockedValueSchema().load(json.loads(request.data.decode("utf-8")))
+    #except ValidationError as err:
+    #    res = ResponseMessageSchema().load({'code':-1, 'msg':str(err)})
+    #    return jsonify(res.data), 400
     locked_value = str(data.get('locked_value'))
     msg = None
-    print(request.data)
-    print(request.headers.get("Content-Type"))
+    #print(request.data)
+    #print(request.headers.get("Content-Type"))
     # get lock activity from cache
     cur_locked_val = str(get_cache_data(cache_key)) or str()
     if cur_locked_val and cur_locked_val == locked_value:
         delete_cache_data(cache_key)
         msg = _('Unlock success')
-    return jsonify(code=200, msg=msg or _('Not unlock'))
+    #res = ResponseMessageSchema().load({'code':200,'msg':_('Not unlock')})
+    return jsonify(res.data), 200
 
 
 @blueprint.route('/check_approval/<string:activity_id>', methods=['GET'])
@@ -1949,7 +1957,8 @@ def check_approval(activity_id='0'):
     except Exception:
         current_app.logger.error("Unexpected error: {}".format(sys.exc_info()))
         response['error'] = -1
-    return jsonify(response)
+    #res = ResponseSchema().load(response)
+    return jsonify(res.data)
 
 
 @blueprint.route('/send_mail/<string:activity_id>/<string:mail_template>',
@@ -2006,13 +2015,17 @@ def save_activity():
         "msg": ""
     }
     try:
-        data = request.get_json()
+        #try:
+        #    data = SaveSchema().load(request.get_json())
+        #except ValidationError as err:
+        #    res = ResponseMessageSchema().load({'code':-1, 'msg':str(err)})
+        #    return jsonify(res.data), 400
         save_activity_data(data)
     except Exception as error:
         response['success'] = False
         response["msg"] = str(error)
-
-    return jsonify(response), 200
+    #res = SaveSchema().load(response)
+    return jsonify(res.data), 200
 
 
 @blueprint.route('/usage-report', methods=['GET'])
