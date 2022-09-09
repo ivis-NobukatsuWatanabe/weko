@@ -1881,7 +1881,7 @@ def lock_activity(activity_id=0):
 
 @blueprint.route('/activity/unlock/<string:activity_id>', methods=['POST'])
 @login_required
-def unlock_activity(activity_id=0):
+def unlock_activity(activity_id="0"):
     """キャッシュデータを削除することによりロックを解除する。
 
     Args:
