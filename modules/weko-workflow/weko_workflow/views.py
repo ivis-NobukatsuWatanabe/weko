@@ -1768,7 +1768,7 @@ def get_feedback_maillist(activity_id='0'):
        activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
     
     Returns:
-        dict: json data
+        dict: 設定されているフィードバックメール送信先を示すjson data
 
     Raises:
         ValueError: if Argument is null or incorrect type.
@@ -1777,7 +1777,7 @@ def get_feedback_maillist(activity_id='0'):
         description: "get feedback maillist"
         security:
             - login_required: []
-        response:
+        responses:
             200:
                 description: "success"
                 content:
@@ -1888,7 +1888,7 @@ def unlock_activity(activity_id=0):
         activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
 
     Returns:
-        dict: json data
+        dict: ロック解除が出来たかを示すjson data
 
     Raises:
         ValueError: if Argument is null or incorrect type.
@@ -1911,7 +1911,7 @@ def unlock_activity(activity_id=0):
               description: 対象のアクティビティID
               schema:
                 type: string
-        response:
+        responses:
             200:
                 description: "success"
                 content:
@@ -1965,7 +1965,7 @@ def check_approval(activity_id='0'):
         activity_id (str, optional): 対象のアクティビティID.パスパラメータから取得. Defaults to '0'.
 
     Returns:
-        dict: json data
+        dict: 承認の確認が必要かの判定結果を示すjson data
 
     Raises:
         ValueError: if Argument is null or incorrect type.
@@ -1974,7 +1974,7 @@ def check_approval(activity_id='0'):
         description: "check approval"
         security:
             - login_required: []
-    response:
+    responses: 
         200:
             description: "success"
                 content:
@@ -2035,7 +2035,7 @@ def save_activity():
     """アイテムデータの新規登録、編集の完了後にアイテムデータの更新をする
 
     Returns:
-        dict: json data
+        dict: アイテムデータの更新が成功したか示すjson data
 
     ---
     post:
@@ -2049,7 +2049,7 @@ def save_activity():
                     schema:
                         SaveActivitySchema   
                     example: {"activity_id": "A-20220830-00001", "title": "title", "shared_user_id": -1} 
-        response:
+        responses:
             200:
                 description: "success"
                 content:
