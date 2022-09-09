@@ -540,16 +540,17 @@ def test_unlock_activity_nologin(client):
     # assert res.url == url_for('security.login')
 
 
-@pytest.mark.parametrize('users_index, status_code', [
-    (0, 200),
-    (1, 200),
-    (2, 200),
-    (3, 200),
-    (4, 200),
-    (5, 200),
-    (6, 200),
+@pytest.mark.parametrize('users_index, status_code, status_code_role
+', [
+    (0, 200,403),
+    (1, 200,0),
+    (2, 200,0),
+    (3, 200,0),
+    (4, 200,403),
+    (5, 200,403),
+    (6, 200,0),
 ])
-def test_unlock_activity_users(client, users, users_index, status_code):
+def test_unlock_activity_users(client, users, users_index, status_code,status_code_role):
     """Test of unlock activity."""
     login(client=client, email=users[users_index]['email'])
     url = url_for('weko_workflow.unlock_activity', activity_id='1')

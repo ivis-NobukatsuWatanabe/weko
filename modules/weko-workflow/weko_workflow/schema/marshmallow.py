@@ -21,25 +21,36 @@ class LockedValueSchema(Schema):
     class Meta:
         strict = True
 
-class ResponseMessageSchema(Schema):
+class ResponseSchema(Schema):
     code = fields.Integer(required=True,validate=Range(min=-2,max=1))
     msg = fields.String(required=True)
-    data = fields.Dict(allow_none=True)
     class Meta:
         strict = True
-    
-class SaveSchema(Schema):
-    activity_id = fields.String.load(required=True)
-    title = fields.String.load(required=True)
-    shared_user_id = fields.Integer.load(required=True,validate=Range(min=-1))
-    approval1 = fields.String.load(allow_none=True)
-    approval2 = fields.String.load(allow_none=True)
 
-class ResponseSchema(Schema):
+class ResponseMessageSchema(ResponseSchema):
+    data = fields.Dict(allow_none=True)
+    
+class GetFeedbackMailListSchema(ResponseShema):
+    data = fields.List(fields.Dict(),allow_none=True)    
+    
+class SaveActivitySchema(Schema):
+    activity_id = fields.String(required=True)
+    title = fields.String(required=True)
+    shared_user_id = fields.Integer(required=True,validate=Range(min=-1))
+    approval1 = fields.String(allow_none=True)
+    approval2 = fields.String(allow_none=True)
+    class Meta:
+        strict = True
+
+class CheckApprovalSchema(Schema):
     check_handle = fields.Integer(required=True,validate=Range(min=-1,max=1))
     check_continue = fields.Integer(required=True,validate=Range(min=-1,max=1))
     err = fields.Integer(required=True,validate=Range(min=-1,max=1))
+    class Meta:
+        strict = True
 
-class SaveResponseSchema(Schema):
+class SaveActivityResponseSchema(Schema):
     succses = fields.String(required=True)
     msg = fields.String(required=True)
+    class Meta:
+        strict = True

@@ -33,7 +33,7 @@ from functools import wraps
 
 import redis
 from redis import sentinel
-from weko_workflow.schema.marshmallow import ActivitySchema,LockedValueSchema,ResponseMessageSchema, ResponseSchema, SaveSchema
+from weko_workflow.schema.marshmallow import ActivitySchema, LockedValueSchema, ResponseMessageSchema, ResponseSchema, SaveActivitySchema,GetFeedbackMailListSchema,SaveActivityResponseSchema
 from marshmallow.exceptions import ValidationError
 
 from flask import Blueprint, abort, current_app, has_request_context, \
@@ -1770,6 +1770,8 @@ def get_feedback_maillist(activity_id='0'):
     Returns:
         dict: json data
 
+    Raises:
+        ValueError: if Argument is null or incorrect type.
     ---
     get:
         description: "get feedback maillist"
@@ -1781,14 +1783,21 @@ def get_feedback_maillist(activity_id='0'):
                 content:
                     application/json:
                         schema:
-                            object
-                        example: jsonify(code=1,msg=_('Success'),data=mail_list)
+                            GetFeedbackMailListSchema
+                        example: {"code":1,"msg":_('Success'),"data":mail_list}
+            500:
+                description: "arguments error"
+                content:
+                    application/json:
+                        schema:
+                            ResponseMessageSchema
+                        example: {"code": -1, "msg": "arguments error"}
     """
-    #try:
-    #    type_null_check(activity_id, str)
-    #except ValueError:
-    #    res = ResponseMessageSchema().load({"code":-1, "msg":""})
-    #    return jsonify(res.data), 500
+    try:
+        type_null_check(activity_id, str)
+    except ValueError as err:
+        res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
+        return jsonify(res.data), 500
     try:
         work_activity = WorkActivity()
         action_feedbackmail = work_activity.get_action_feedbackmail(
@@ -1797,8 +1806,8 @@ def get_feedback_maillist(activity_id='0'):
                 "WEKO_WORKFLOW_ITEM_REGISTRATION_ACTION_ID", 3))
         if action_feedbackmail:
             mail_list = action_feedbackmail.feedback_maillist
-            #if not isinstance(mail_list, list):
-            #    raise TypeError('mail_list is not list')
+            if not isinstance(mail_list, list):
+                res = ResponseMessageSchema().load({"code":-1,"msg":"mail_list is not list"})
             for mail in mail_list:
                 if mail.get('author_id'):
                     email = Authors.get_first_email_by_id(
@@ -1807,15 +1816,15 @@ def get_feedback_maillist(activity_id='0'):
                         mail['email'] = email
                     else:
                         mail_list.remove(mail)
-            #res = ResponseMessageSchema().load({'code':1,'msg':_('Success'),'data':mail_list})
+            res = GetFeedbackMailListSchema().load({'code':1,'msg':_('Success'),'data':mail_list})
             return jsonify(res.data), 200
         else:
-            #res = ResponseMessageSchema().load({'code':0,'msg':''})
+            res = ResponseMessageSchema().load({'code':0,'msg':''})
             return jsonify(res.data), 200
     except Exception:
         current_app.logger.error("Unexpected error: {}".format(sys.exc_info()))
-    #res = ResponseMessageSchema().load({'code':-1,'msg':_('Error')})
-    return jsonify(res.data)
+    res = ResponseMessageSchema().load({'code':-1,'msg':_('Error')})
+    return jsonify(res.data), 500
 
 
 @blueprint.route('/activity/lock/<string:activity_id>', methods=['POST'])
@@ -1881,6 +1890,9 @@ def unlock_activity(activity_id=0):
     Returns:
         dict: json data
 
+    Raises:
+        ValueError: if Argument is null or incorrect type.
+        marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
     ---
     post:
         description: "unlock activity"
@@ -1891,7 +1903,7 @@ def unlock_activity(activity_id=0):
             content:
                 text/plain:
                     schema:
-                        string
+                        LockedValueSchema
                     example: {"locked_value":"1-1661748792565"}
         parameters:
             - in: path
@@ -1905,30 +1917,42 @@ def unlock_activity(activity_id=0):
                 content:
                     application/json:
                         schema:
-                            object
-                        example: jsonify(code=200, msg="Unlock success")
+                            ResponseMessageSchema
+                        example: {"code":200,"msg":"Unlock success"}
+            400:
+                description: "validation error"
+                content:
+                    application/json:
+                        schema:
+                            ResponseMessageSchema
+                        example: {"code": -1,"msg":"validation error"}
+            500:
+                description: "arg error"
+                content:
+                    application/json:
+                        schema:
+                            ResponseMessageSchema
+                        example: {"code": -1, "msg": "arguments error"}
     """
-    #try:
-    #    type_null_check(activity_id, str)
-    #except ValueError:
-    #    res = ResponseMessageSchema().load({"code":-1, "msg":""})
-    #    return jsonify(res.data), 500
+    try:
+        type_null_check(activity_id, str)
+    except ValueError as err:
+        res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
+        return jsonify(res.data), 500
     cache_key = 'workflow_locked_activity_{}'.format(activity_id)
-    #try:
-    #    data = LockedValueSchema().load(json.loads(request.data.decode("utf-8")))
-    #except ValidationError as err:
-    #    res = ResponseMessageSchema().load({'code':-1, 'msg':str(err)})
-    #    return jsonify(res.data), 400
-    locked_value = str(data.get('locked_value'))
+    try:
+        data = LockedValueSchema().load(json.loads(request.data.decode("utf-8")))
+    except ValidationError as err:
+        res = ResponseMessageSchema().load({'code':-1, 'msg':str(err)})
+        return jsonify(res.data), 400
+    locked_value = str(data.data.get('locked_value'))
     msg = None
-    #print(request.data)
-    #print(request.headers.get("Content-Type"))
     # get lock activity from cache
     cur_locked_val = str(get_cache_data(cache_key)) or str()
     if cur_locked_val and cur_locked_val == locked_value:
         delete_cache_data(cache_key)
         msg = _('Unlock success')
-    #res = ResponseMessageSchema().load({'code':200,'msg':_('Not unlock')})
+    res = ResponseMessageSchema().load({'code':200,'msg':msg or _('Not unlock')})
     return jsonify(res.data), 200
 
 
@@ -1943,6 +1967,8 @@ def check_approval(activity_id='0'):
     Returns:
         dict: json data
 
+    Raises:
+        ValueError: if Argument is null or incorrect type.
     ---
     get:
         description: "check approval"
@@ -1954,14 +1980,21 @@ def check_approval(activity_id='0'):
                 content:
                     application/json:
                         schema:
-                            object
-                        example: jsonify({'check_handle': -1, 'check_continue': -1, 'error': 1 })
+                            CheckApprovalSchema        
+                        example: {"check_handle": -1, "check_continue": -1, "error": 1 }
+        500:
+                description: "arguments error"
+                content:
+                    application/json:
+                        schema:
+                            ResponseMessageSchema
+                        example: {"code": -1, "msg": "arguments error"}
     """
-    #try:
-    #    type_null_check(activity_id, str)
-    #except ValueError:
-    #    res = ResponseMessageSchema().load({"code":-1, "msg":""})
-    #    return jsonify(res.data), 500
+    try:
+        type_null_check(activity_id, str)
+    except ValueError as err:
+        res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
+        return jsonify(res.data), 500
     response = {
         'check_handle': -1,
         'check_continue': -1,
@@ -1972,8 +2005,8 @@ def check_approval(activity_id='0'):
     except Exception:
         current_app.logger.error("Unexpected error: {}".format(sys.exc_info()))
         response['error'] = -1
-    #res = ResponseSchema().load(response)
-    return jsonify(res.data)
+    res = CheckApprovalSchema().load(response)
+    return jsonify(res.data), 200
 
 
 @blueprint.route('/send_mail/<string:activity_id>/<string:mail_template>',
@@ -2014,7 +2047,7 @@ def save_activity():
             content:
                 application/json:
                     schema:
-                        object   
+                        SaveActivitySchema   
                     example: {"activity_id": "A-20220830-00001", "title": "title", "shared_user_id": -1} 
         response:
             200:
@@ -2022,24 +2055,31 @@ def save_activity():
                 content:
                     application/json:
                         schema:
-                            object
-                        example: jsonify({"success": True, "msg": ""})
+                            SaveActivityResponseSchema
+                        example: {"success": True, "msg": ""}
+            400:
+                description: "arguments error"
+                content:
+                    application/json:
+                        schema:
+                            ResponseMessageSchema
+                        example: {"code": -1,"msg":"arguments error"}
     """
     response = {
         "success": True,
         "msg": ""
     }
     try:
-        #try:
-        #    data = SaveSchema().load(request.get_json())
-        #except ValidationError as err:
-        #    res = ResponseMessageSchema().load({'code':-1, 'msg':str(err)})
-        #    return jsonify(res.data), 400
-        save_activity_data(data)
+        try:
+            data = SaveActivitySchema().load(request.get_json())
+        except ValidationError as err:
+            res = ResponseMessageSchema().load({'code':-1, 'msg':"arguments error"})
+            return jsonify(res.data), 400
+        save_activity_data(data.data)
     except Exception as error:
         response['success'] = False
         response["msg"] = str(error)
-    #res = SaveSchema().load(response)
+    res = SaveActivityResponseSchema().load(response)
     return jsonify(res.data), 200
 
 
