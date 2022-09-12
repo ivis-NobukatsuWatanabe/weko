@@ -1974,15 +1974,15 @@ def check_approval(activity_id='0'):
         description: "check approval"
         security:
             - login_required: []
-    responses: 
-        200:
-            description: "success"
+        responses: 
+            200:
+                description: "success"
                 content:
                     application/json:
                         schema:
                             CheckApprovalSchema        
                         example: {"check_handle": -1, "check_continue": -1, "error": 1 }
-        500:
+            500:
                 description: "arguments error"
                 content:
                     application/json:
