@@ -1898,13 +1898,13 @@ def unlock_activity(activity_id="0"):
         description: "unlock activity"
         security:
             - login_required: []
-        request_Body:
+        requestBody:
             required: true
             content:
                 text/plain:
                     schema:
                         LockedValueSchema
-                    example: {"locked_value":"1-1661748792565"}
+                    example: '{"locked_value":"1-1661748792565"}'
         parameters:
             - in: path
               name: activity_id
@@ -2042,7 +2042,7 @@ def save_activity():
         description: "save activity"
         security:
             - login_required_customize: []
-        request_Body:
+        requestBody:
             required: true
             content:
                 application/json:
