@@ -1898,7 +1898,6 @@ def unlock_activity(activity_id="0"):
         security:
             - login_required: []
         requestBody:
-            required: false
             content:
                 text/plain:
                     schema:
@@ -2044,7 +2043,6 @@ def save_activity():
         security:
             - login_required_customize: []
         requestBody:
-            required: false
             content:
                 application/json:
                     schema:
