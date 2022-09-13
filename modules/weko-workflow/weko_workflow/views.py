@@ -1771,7 +1771,7 @@ def get_feedback_maillist(activity_id='0'):
         dict: 設定されているフィードバックメール送信先を示すjson data
 
     Raises:
-        ValueError: if Argument is null or incorrect type.
+        marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
     ---
     get:
         description: "get feedback maillist"
@@ -1891,7 +1891,6 @@ def unlock_activity(activity_id="0"):
         dict: ロック解除が出来たかを示すjson data
 
     Raises:
-        ValueError: if Argument is null or incorrect type.
         marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
     ---
     post:
@@ -1968,7 +1967,7 @@ def check_approval(activity_id='0'):
         dict: 承認の確認が必要かの判定結果を示すjson data
 
     Raises:
-        ValueError: if Argument is null or incorrect type.
+        marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
     ---
     get:
         description: "check approval"
@@ -2036,7 +2035,9 @@ def save_activity():
 
     Returns:
         dict: アイテムデータの更新が成功したか示すjson data
-
+    
+    Raises:
+        marshmallow.exceptions.ValidationError: if ResponseMessageSchema is invalid.
     ---
     post:
         description: "save activity"
