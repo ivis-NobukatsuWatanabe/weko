@@ -540,15 +540,14 @@ def test_unlock_activity_nologin(client):
     # assert res.url == url_for('security.login')
 
 
-@pytest.mark.parametrize('users_index, status_code, status_code_role
-', [
-    (0, 200,403),
-    (1, 200,0),
-    (2, 200,0),
-    (3, 200,0),
-    (4, 200,403),
-    (5, 200,403),
-    (6, 200,0),
+@pytest.mark.parametrize('users_index, status_code, status_code_role', [
+    (0, 200, 403),
+    (1, 200, 0),
+    (2, 200, 0),
+    (3, 200, 0),
+    (4, 200, 403),
+    (5, 200, 403),
+    (6, 200, 0),
 ])
 def test_unlock_activity_users(client, users, users_index, status_code,status_code_role):
     """Test of unlock activity."""
