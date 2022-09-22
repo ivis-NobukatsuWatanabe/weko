@@ -580,9 +580,9 @@ def test_unlock_activity_users(client, users, users_index, status_code):
 def test_unlock_activity(client, users, db_register, users_index, status_code):
     login(client=client, email=users[users_index]['email'])
     url = url_for('weko_workflow.unlock_activity', activity_id='1')
-
-    #locked_valueが空文字で、cur_locked_valも空文字の場合
     input = {'locked_value':'1-1661748792565'}
+    
+    #locked_valueが空文字で、cur_locked_valも空文字の場合
     with patch('weko_workflow.views.get_cache_data', return_value=""):
         res = client.post(url, json=input)
         data = json.loads(res.data.decode("utf-8"))
@@ -591,7 +591,6 @@ def test_unlock_activity(client, users, db_register, users_index, status_code):
         assert data["msg"] == 'Not unlock'
 
     #locked_valueが空でなく、cur_locked_valと一致する場合
-    input = {'locked_value':'1-1661748792565'}
     with patch('weko_workflow.views.get_cache_data', return_value='1-1661748792565'):
         with patch('weko_workflow.views.delete_cache_data'):
             res = client.post(url, json=input)
