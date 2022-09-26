@@ -1786,7 +1786,7 @@ def get_feedback_maillist(activity_id='0'):
                         schema:
                             GetFeedbackMailListSchema
                         example: {"code":1,"msg":_('Success'),"data":mail_list}
-            500:
+            400:
                 description: "arguments error"
                 content:
                     application/json:
@@ -1798,7 +1798,7 @@ def get_feedback_maillist(activity_id='0'):
         type_null_check(activity_id, str)
     except ValueError as err:
         res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
-        return jsonify(res.data), 500
+        return jsonify(res.data), 400
     try:
         work_activity = WorkActivity()
         action_feedbackmail = work_activity.get_action_feedbackmail(
@@ -1809,6 +1809,7 @@ def get_feedback_maillist(activity_id='0'):
             mail_list = action_feedbackmail.feedback_maillist
             if not isinstance(mail_list, list):
                 res = ResponseMessageSchema().load({"code":-1,"msg":"mail_list is not list"})
+                return jsonify(res.data), 400
             for mail in mail_list:
                 if mail.get('author_id'):
                     email = Authors.get_first_email_by_id(
@@ -1921,13 +1922,6 @@ def unlock_activity(activity_id="0"):
                             ResponseMessageSchema
                         example: {"code":200,"msg":"Unlock success"}
             400:
-                description: "validation error"
-                content:
-                    application/json:
-                        schema:
-                            ResponseMessageSchema
-                        example: {"code": -1,"msg":"validation error"}
-            500:
                 description: "arg error"
                 content:
                     application/json:
@@ -1984,7 +1978,7 @@ def check_approval(activity_id='0'):
                         schema:
                             CheckApprovalSchema        
                         example: {"check_handle": -1, "check_continue": -1, "error": 1 }
-            500:
+            400:
                 description: "arguments error"
                 content:
                     application/json:
@@ -1996,7 +1990,7 @@ def check_approval(activity_id='0'):
         type_null_check(activity_id, str)
     except ValueError as err:
         res = ResponseMessageSchema().load({"code":-1, "msg":"arguments error"})
-        return jsonify(res.data), 500
+        return jsonify(res.data), 400
     response = {
         'check_handle': -1,
         'check_continue': -1,
