@@ -1,6 +1,3 @@
-from email.policy import strict
-from importlib.metadata import requires
-from typing_extensions import Required
 from marshmallow import Schema, fields 
 from marshmallow.validate import Range
 
@@ -30,7 +27,13 @@ class ResponseSchema(Schema):
 class ResponseMessageSchema(ResponseSchema):
     data = fields.Dict(allow_none=True)
     
-class GetFeedbackMailListSchema(ResponseShema):
+class ResponseUnlockSchema(Schema):
+    code = fields.Integer(required=True)
+    msg = fields.String()
+    class Meta:
+        strict = True
+        
+class GetFeedbackMailListSchema(ResponseSchema):
     data = fields.List(fields.Dict(),allow_none=True)    
     
 class SaveActivitySchema(Schema):
@@ -45,12 +48,12 @@ class SaveActivitySchema(Schema):
 class CheckApprovalSchema(Schema):
     check_handle = fields.Integer(required=True,validate=Range(min=-1,max=1))
     check_continue = fields.Integer(required=True,validate=Range(min=-1,max=1))
-    err = fields.Integer(required=True,validate=Range(min=-1,max=1))
+    error = fields.Integer(required=True,validate=Range(min=-1,max=1))
     class Meta:
         strict = True
 
 class SaveActivityResponseSchema(Schema):
-    succses = fields.String(required=True)
+    success = fields.Boolean(required=True)
     msg = fields.String(required=True)
     class Meta:
         strict = True
