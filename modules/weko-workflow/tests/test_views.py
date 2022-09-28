@@ -805,6 +805,24 @@ def test_save_activity(client, users, db_register, users_index, status_code):
         assert data["success"] == False
         assert data["msg"] == "test error"
 
+#guestuserでの機能テスト
+def test_save_activity_guestlogin(guest):
+    url = url_for('weko_workflow.save_activity')
+    input = {"activity_id":"A-20220921-00001","title":"test","shared_user_id":-1}
+
+    with patch('weko_workflow.views.save_activity_data'):
+        res = guest.post(url, json=input)
+        data = response_data(res)
+        assert res.status_code==200
+        assert data["success"] == True
+        assert data["msg"] == ""
+
+    with patch('weko_workflow.views.save_activity_data', side_effect=Exception("test error")):
+        res = guest.post(url, json=input)
+        data = response_data(res)
+        assert res.status_code==200
+        assert data["success"] == False
+        assert data["msg"] == "test error"
 
 #save_activityは@login_required_customizeなのでguestuserloginのテストも必要
 def test_save_activity_acl_guestlogin(guest):
