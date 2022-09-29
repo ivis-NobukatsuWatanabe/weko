@@ -681,10 +681,6 @@ def db_register(app, db,users):
                      action_status='A',
                      action_date=datetime.strptime('2018/07/28 0:00:00','%Y/%m/%d %H:%M:%S'),
                      send_mail_setting={})
-    with db.session.begin_nested():
-        db.session.add(flow_action1)
-        db.session.add(flow_action2)
-        db.session.add(flow_action3)
 
     workflow = WorkFlow(flows_id=uuid.uuid4(),
                         flows_name='test workflow1',
@@ -760,6 +756,12 @@ def db_register(app, db,users):
                     action_order=1,
                     )
     with db.session.begin_nested():
+        db.session.add(flow_define)
+        db.session.add(item_type_name)
+        db.session.add(item_type)
+        db.session.add(flow_action1)
+        db.session.add(flow_action2)
+        db.session.add(flow_action3)
         db.session.add(workflow)
         db.session.add(activity)
         db.session.add(activity_item1)
