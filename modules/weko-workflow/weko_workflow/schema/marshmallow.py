@@ -30,15 +30,15 @@ class NextItemLinkSchema(NextSchema):
     link_data = fields.List(fields.Dict(),allow_none=True)
 
 class NextIdentifierSchema(NextSchema):
-    identifier_grant = fields.String(required=True)
-    identifier_grant_jalc_doi_suffix = fields.String(allow_none=True)
-    identifier_grant_jalc_doi_link = fields.String(required=True)
-    identifier_grant_jalc_cr_doi_suffix = fields.String(allow_none=True)
-    identifier_grant_jalc_cr_doi_link = fields.String(required=True)
-    identifier_grant_jalc_dc_doi_suffix = fields.String(allow_none=True)
-    identifier_grant_jalc_dc_doi_link = fields.String(required=True)
-    identifier_grant_ndl_jalc_doi_suffix = fields.String(allow_none=True)
-    identifier_grant_ndl_jalc_doi_link = fields.String(required=True)
+    identifier_grant = fields.String(allow_none=True)
+    identifier_grant_jalc_doi_suffix = fields.String(required=True)
+    identifier_grant_jalc_doi_link = fields.String(allow_none=True)
+    identifier_grant_jalc_cr_doi_suffix = fields.String(required=True)
+    identifier_grant_jalc_cr_doi_link = fields.String(allow_none=True)
+    identifier_grant_jalc_dc_doi_suffix = fields.String(required=True)
+    identifier_grant_jalc_dc_doi_link = fields.String(allow_none=True)
+    identifier_grant_ndl_jalc_doi_suffix = fields.String(required=True)
+    identifier_grant_ndl_jalc_doi_link = fields.String(allow_none=True)
 
 class NextOAPolicySchema(NextSchema):
     journal = fields.Dict(allow_none=True)
@@ -61,7 +61,12 @@ class ResponseLockSchema(Schema):
     locked_by_username = fields.String(allow_none=True)
     class Meta:
         strict = True
-        
+
+class ResponseUnlockSchema(Schema):
+    code = fields.Integer(required=True)
+    msg = fields.String()
+
+
 class PasswdSchema(Schema):
     passwd = fields.String(required=True)
     
@@ -91,12 +96,12 @@ class SaveActivitySchema(Schema):
 class CheckApprovalSchema(Schema):
     check_handle = fields.Integer(required=True,validate=Range(min=-1,max=1))
     check_continue = fields.Integer(required=True,validate=Range(min=-1,max=1))
-    err = fields.Integer(required=True,validate=Range(min=-1,max=1))
+    error = fields.Integer(required=True,validate=Range(min=-1,max=1))
     class Meta:
         strict = True
 
 class SaveActivityResponseSchema(Schema):
-    succses = fields.String(required=True)
+    success = fields.Boolean(required=True)
     msg = fields.String(required=True)
     class Meta:
         strict = True
